@@ -1178,7 +1178,9 @@
 
         const prevIndex = currentSlide;
         slides[prevIndex].classList.remove('active');
-        slides[prevIndex].classList.add(index > prevIndex ? 'prev' : '');
+        if (index > prevIndex) {
+            slides[prevIndex].classList.add('prev');
+        }
 
         // Remove prev class after transition
         setTimeout(() => slides[prevIndex].classList.remove('prev'), 500);
