@@ -717,10 +717,10 @@
   slides.forEach(s => observer.observe(s));
 
   document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
       e.preventDefault();
       slides[Math.min(currentSlide + 1, slides.length - 1)].scrollIntoView({ behavior: 'smooth' });
-    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
       e.preventDefault();
       slides[Math.max(currentSlide - 1, 0)].scrollIntoView({ behavior: 'smooth' });
     } else if (e.key === 'f' || e.key === 'F') {

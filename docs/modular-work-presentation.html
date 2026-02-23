@@ -1251,11 +1251,11 @@
 
   // Keyboard navigation
   document.addEventListener('keydown', e => {
-    if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
       e.preventDefault();
       const next = Math.min(currentSlide + 1, slides.length - 1);
       slides[next].scrollIntoView({ behavior: 'smooth' });
-    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
       e.preventDefault();
       const prev = Math.max(currentSlide - 1, 0);
       slides[prev].scrollIntoView({ behavior: 'smooth' });
