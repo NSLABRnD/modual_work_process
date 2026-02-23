@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modular Work Framework - 모듈러 업무 체계 설계</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #1a2332;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --accent3: #8b5cf6;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --text: #f1f5f9;
+    --text-dim: #94a3b8;
+    --border: #475569;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* Navigation */
+  .nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    height: 56px;
+    gap: 1rem;
+  }
+  .nav-brand {
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--accent);
+    white-space: nowrap;
+  }
+  .nav-slides {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    flex: 1;
+    padding: 0 0.5rem;
+  }
+  .nav-slides::-webkit-scrollbar { display: none; }
+  .nav-dot {
+    min-width: 8px; height: 8px;
+    border-radius: 4px;
+    background: var(--surface2);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .nav-dot.active {
+    background: var(--accent);
+    min-width: 24px;
+  }
+  .nav-counter {
+    font-size: 1rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  /* Slide Container */
+  .slides-container {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    height: 100vh;
+  }
+
+  .slide {
+    min-height: 100vh;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .slide-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Slide Header */
+  .slide-section {
+    display: inline-block;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 0.75rem;
+    padding: 4px 12px;
+    background: rgba(6, 182, 212, 0.1);
+    border-radius: 4px;
+    border: 1px solid rgba(6, 182, 212, 0.2);
+  }
+
+  .slide h1 {
+    font-size: 3.4rem;
+    font-weight: 900;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, #f1f5f9, #94a3b8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .slide h2 {
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text);
+  }
+
+  .slide h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--accent2);
+  }
+
+  .slide p.subtitle {
+    font-size: 1.35rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    max-width: 800px;
+  }
+
+  /* Cover Slide */
+  .slide-cover {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(ellipse at 50% 50%, rgba(59,130,246,0.08) 0%, transparent 70%);
+  }
+  .slide-cover .slide-inner { max-width: 800px; }
+  .slide-cover h1 {
+    font-size: 4rem;
+    background: linear-gradient(135deg, #3b82f6, #06b6d4, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .cover-badge {
+    display: inline-block;
+    padding: 8px 20px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    margin-bottom: 2rem;
+  }
+  .cover-meta {
+    margin-top: 3rem;
+    font-size: 1.1rem;
+    color: var(--text-dim);
+  }
+
+  /* Card Grids */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(59,130,246,0.1);
+  }
+
+  .card-icon {
+    width: 52px; height: 52px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .card h4 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .card p {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+
+  /* Problem Cards */
+  .card-problem {
+    border-left: 3px solid var(--danger);
+  }
+  .card-problem .card-icon {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--danger);
+  }
+
+  /* Solution Cards */
+  .card-solution {
+    border-left: 3px solid var(--success);
+  }
+  .card-solution .card-icon {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--success);
+  }
+
+  /* Principle Cards */
+  .card-principle {
+    border-top: 3px solid var(--accent3);
+    text-align: center;
+  }
+  .card-principle .card-icon {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--accent3);
+    margin: 0 auto 1rem;
+  }
+
+  /* Architecture Diagram */
+  .arch-layer {
+    padding: 1.25rem 1.75rem;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.3s;
+    cursor: default;
+  }
+  .arch-layer:hover { transform: scale(1.02); }
+  .arch-label {
+    font-weight: 700;
+    font-size: 1.15rem;
+    min-width: 240px;
+  }
+  .arch-desc {
+    font-size: 1.05rem;
+    color: var(--text-dim);
+  }
+  .arch-l1 { background: linear-gradient(90deg, rgba(59,130,246,0.2), rgba(59,130,246,0.05)); border-left: 3px solid #3b82f6; }
+  .arch-l2 { background: linear-gradient(90deg, rgba(6,182,212,0.2), rgba(6,182,212,0.05)); border-left: 3px solid #06b6d4; }
+  .arch-l3 { background: linear-gradient(90deg, rgba(139,92,246,0.2), rgba(139,92,246,0.05)); border-left: 3px solid #8b5cf6; }
+  .arch-l4 { background: linear-gradient(90deg, rgba(245,158,11,0.2), rgba(245,158,11,0.05)); border-left: 3px solid #f59e0b; }
+  .arch-l5 { background: linear-gradient(90deg, rgba(16,185,129,0.2), rgba(16,185,129,0.05)); border-left: 3px solid #10b981; }
+
+  /* Flow / Process */
+  .process-steps {
+    display: flex;
+    gap: 0;
+    align-items: stretch;
+  }
+  .process-step {
+    flex: 1;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    position: relative;
+    text-align: center;
+  }
+  .process-step:first-child { border-radius: 12px 0 0 12px; }
+  .process-step:last-child { border-radius: 0 12px 12px 0; }
+  .process-step .step-num {
+    display: inline-flex;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  .process-step h4 {
+    font-size: 1.05rem;
+    margin-bottom: 0.4rem;
+  }
+  .process-step p {
+    font-size: 0.92rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+  .process-step::after {
+    content: '>';
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-weight: 700;
+    z-index: 2;
+    font-size: 1rem;
+  }
+  .process-step:last-child::after { display: none; }
+
+  /* Compare */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .compare-side {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+  .compare-as-is {
+    background: rgba(239,68,68,0.05);
+    border: 1px solid rgba(239,68,68,0.2);
+  }
+  .compare-to-be {
+    background: rgba(16,185,129,0.05);
+    border: 1px solid rgba(16,185,129,0.2);
+  }
+  .compare-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--accent);
+    align-self: center;
+  }
+  .compare-side h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  /* List styled */
+  .list-check {
+    list-style: none;
+    padding: 0;
+  }
+  .list-check li {
+    padding: 0.5rem 0;
+    padding-left: 1.5rem;
+    position: relative;
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .list-check li::before {
+    content: ''; position: absolute; left: 0; top: 0.85rem;
+    width: 6px; height: 6px; border-radius: 50%;
+  }
+  .list-bad li::before { background: var(--danger); }
+  .list-good li::before { background: var(--success); }
+
+  /* Interface Code Block */
+  .code-block {
+    background: #0d1117;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    font-family: 'Consolas', 'Fira Code', monospace;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    overflow-x: auto;
+    color: #e6edf3;
+  }
+  .code-keyword { color: #ff7b72; }
+  .code-type { color: #79c0ff; }
+  .code-method { color: #d2a8ff; }
+  .code-comment { color: #8b949e; }
+  .code-string { color: #a5d6ff; }
+  .code-param { color: #ffa657; }
+
+  /* Timeline / Roadmap */
+  .roadmap {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  .phase {
+    border-radius: 12px;
+    padding: 1.25rem;
+    position: relative;
+  }
+  .phase::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -0.5rem;
+    width: 1rem;
+    height: 2px;
+    z-index: 1;
+  }
+  .phase:last-child::before { display: none; }
+  .phase-num {
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+  }
+  .phase h4 {
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+  }
+  .phase ul {
+    list-style: none;
+    padding: 0;
+  }
+  .phase li {
+    font-size: 0.98rem;
+    color: var(--text-dim);
+    padding: 3px 0;
+    padding-left: 1rem;
+    position: relative;
+  }
+  .phase li::before {
+    content: ''; position: absolute; left: 0; top: 0.55rem;
+    width: 5px; height: 5px; border-radius: 50%;
+    border: 1.5px solid;
+  }
+  .phase-1 { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.2); }
+  .phase-1 .phase-num { color: #3b82f6; }
+  .phase-1 li::before { border-color: #3b82f6; }
+  .phase-1::before { background: #3b82f6; }
+  .phase-2 { background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2); }
+  .phase-2 .phase-num { color: #06b6d4; }
+  .phase-2 li::before { border-color: #06b6d4; }
+  .phase-2::before { background: #06b6d4; }
+  .phase-3 { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2); }
+  .phase-3 .phase-num { color: #8b5cf6; }
+  .phase-3 li::before { border-color: #8b5cf6; }
+  .phase-3::before { background: #8b5cf6; }
+  .phase-4 { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.2); }
+  .phase-4 .phase-num { color: #10b981; }
+  .phase-4 li::before { border-color: #10b981; }
+
+  /* Role Matrix */
+  .matrix-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 1.0rem;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .matrix-table th {
+    background: var(--surface2);
+    padding: 0.85rem 1rem;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    font-size: 1.05rem;
+  }
+  .matrix-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(71,85,105,0.3);
+    color: var(--text-dim);
+  }
+  .matrix-table tr:last-child td { border-bottom: none; }
+  .matrix-table tr:hover td { background: rgba(59,130,246,0.05); }
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .badge-primary { background: rgba(59,130,246,0.2); color: #3b82f6; }
+  .badge-secondary { background: rgba(139,92,246,0.2); color: #8b5cf6; }
+
+  /* Module map */
+  .module-map {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .module-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .module-box {
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 500;
+    white-space: nowrap;
+    text-align: center;
+    flex: 1;
+  }
+
+  /* Highlight box */
+  .highlight-box {
+    background: rgba(59,130,246,0.08);
+    border: 1px solid rgba(59,130,246,0.2);
+    border-radius: 10px;
+    padding: 1.25rem 1.5rem;
+    margin: 1rem 0;
+  }
+  .highlight-box p {
+    font-size: 1.1rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+  }
+  .highlight-box strong { color: var(--accent); }
+
+  /* Keyboard hint */
+  .key-hint {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 2rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    opacity: 0.5;
+    z-index: 100;
+  }
+  kbd {
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 0.7rem;
+    background: var(--surface);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .slide { padding: 80px 1.5rem 2rem; }
+    .slide h1 { font-size: 2rem; }
+    .grid-2, .grid-3, .grid-4, .roadmap { grid-template-columns: 1fr; }
+    .compare { grid-template-columns: 1fr; }
+    .compare-arrow { transform: rotate(90deg); }
+    .process-steps { flex-direction: column; }
+    .process-step { border-radius: 8px !important; }
+    .process-step::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">MODULAR WORK</div>
+  <div class="nav-slides" id="navDots"></div>
+  <div class="nav-counter" id="navCounter">1 / 12</div>
+</nav>
+
+<div class="slides-container" id="slidesContainer">
+
+  <!-- ===== SLIDE 1: COVER ===== -->
+  <section class="slide slide-cover" data-title="표지">
+    <div class="slide-inner">
+      <div class="cover-badge">MOSA 기반 업무 혁신 전략</div>
+      <h1>모듈러 워크<br>프레임워크</h1>
+      <p class="subtitle">
+        블록체인 소프트웨어 개발팀의<br>
+        모듈식 업무 체계 설계 및 도입 방안
+      </p>
+      <div class="cover-meta">
+        <p>NSLAB &middot; 2026.02</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 2: AGENDA ===== -->
+  <section class="slide" data-title="목차">
+    <div class="slide-inner">
+      <div class="slide-section">Contents</div>
+      <h2>목차</h2>
+      <div class="grid-2" style="max-width:800px;">
+        <div class="card" style="border-left:3px solid #ef4444;">
+          <h4 style="color:#ef4444;">I. 현황 분석</h4>
+          <p>현재 업무 방식의 문제점과 한계</p>
+        </div>
+        <div class="card" style="border-left:3px solid #3b82f6;">
+          <h4 style="color:#3b82f6;">II. MOSA 원칙</h4>
+          <p>모듈러 오픈 시스템 접근법 핵심 원칙</p>
+        </div>
+        <div class="card" style="border-left:3px solid #8b5cf6;">
+          <h4 style="color:#8b5cf6;">III. 프로세스 모듈화</h4>
+          <p>업무 프로세스의 모듈화 전략</p>
+        </div>
+        <div class="card" style="border-left:3px solid #06b6d4;">
+          <h4 style="color:#06b6d4;">IV. 아키텍처 모듈화</h4>
+          <p>소프트웨어 구조의 모듈화 설계</p>
+        </div>
+        <div class="card" style="border-left:3px solid #f59e0b;">
+          <h4 style="color:#f59e0b;">V. 업무 분석 프로세스</h4>
+          <p>요구사항 분석 7단계 표준 프로세스</p>
+        </div>
+        <div class="card" style="border-left:3px solid #10b981;">
+          <h4 style="color:#10b981;">VI. 로드맵</h4>
+          <p>단계별 도입 계획 및 마일스톤</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 3: AS-IS PROBLEMS ===== -->
+  <section class="slide" data-title="현황 분석">
+    <div class="slide-inner">
+      <div class="slide-section">I. 현황 분석</div>
+      <h2>현재 업무 방식의 핵심 문제점</h2>
+      <div class="grid-2">
+        <div class="card card-problem">
+          <div class="card-icon">&#9888;</div>
+          <h4>특정 인원 의존성 (SPOF)</h4>
+          <p>특정 팀원만 처리 가능한 업무가 많아 병목 발생.<br>
+          담당자 부재 시 전체 업무가 멈추는 위험 상존.</p>
+        </div>
+        <div class="card card-problem">
+          <div class="card-icon">&#128260;</div>
+          <h4>코드 재사용 불가</h4>
+          <p>프로젝트마다 유사한 코드를 매번 새로 작성.<br>
+          블록체인별 중복 작업이 반복적으로 발생.</p>
+        </div>
+        <div class="card card-problem">
+          <div class="card-icon">&#128268;</div>
+          <h4>협업 인터페이스 부재</h4>
+          <p>팀원 간 작업 결과물의 연동 기준이 없어<br>
+          통합 시 충돌과 지연이 빈번하게 발생.</p>
+        </div>
+        <div class="card card-problem">
+          <div class="card-icon">&#128274;</div>
+          <h4>지식 사일로 (Knowledge Silo)</h4>
+          <p>블록체인별, 플랫폼별 지식이 개인에게 고립.<br>
+          팀 전체 역량으로 축적되지 않음.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 4: AS-IS vs TO-BE ===== -->
+  <section class="slide" data-title="As-Is vs To-Be">
+    <div class="slide-inner">
+      <div class="slide-section">I. 현황 분석</div>
+      <h2>As-Is vs To-Be 비교</h2>
+      <div class="compare">
+        <div class="compare-side compare-as-is">
+          <h3><span style="color:var(--danger);">&#9679;</span> 현재 (As-Is)</h3>
+          <ul class="list-check list-bad">
+            <li>업무가 개인에게 종속된 구조</li>
+            <li>프로젝트마다 처음부터 개발</li>
+            <li>연동 규칙 없이 각자 방식대로</li>
+            <li>문서화 부재, 구두 인수인계</li>
+            <li>한 명이 빠지면 일정 지연</li>
+            <li>블록체인마다 별도 코드베이스</li>
+          </ul>
+        </div>
+        <div class="compare-arrow">&#10140;</div>
+        <div class="compare-side compare-to-be">
+          <h3><span style="color:var(--success);">&#9679;</span> 목표 (To-Be)</h3>
+          <ul class="list-check list-good">
+            <li>업무가 모듈 단위로 분리, 교체 가능</li>
+            <li>공통 모듈을 조합하여 빠르게 개발</li>
+            <li>표준 인터페이스로 자연스러운 연동</li>
+            <li>모듈별 기술 문서 필수 작성</li>
+            <li>주/부 담당 체계로 리스크 분산</li>
+            <li>어댑터 패턴으로 체인 추상화</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 5: MOSA 5 PRINCIPLES ===== -->
+  <section class="slide" data-title="MOSA 5대 원칙">
+    <div class="slide-inner">
+      <div class="slide-section">II. MOSA 원칙</div>
+      <h2>MOSA 5대 핵심 원칙 &rarr; 우리 팀 적용</h2>
+      <p class="subtitle" style="margin-bottom:1.5rem;">MOSA(Modular Open Systems Approach)의 원칙을 블록체인 개발팀에 맞게 재해석합니다.</p>
+      <div class="grid-3" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="card card-principle">
+          <div class="card-icon">&#127970;</div>
+          <h4>1. 프레임워크<br>지원 환경</h4>
+          <p>개발 가이드, 온보딩 문서, 교육 체계, 정책/거버넌스 수립</p>
+        </div>
+        <div class="card card-principle">
+          <div class="card-icon">&#129513;</div>
+          <h4>2. 모듈식<br>설계 적용</h4>
+          <p>높은 응집도 + 낮은 결합도로 독립 개발/배포 가능한 모듈 설계</p>
+        </div>
+        <div class="card card-principle">
+          <div class="card-icon">&#128279;</div>
+          <h4>3. Key Interface<br>정의</h4>
+          <p>모듈 간 표준 API/인터페이스를 정의하여 안정적 연동 보장</p>
+        </div>
+      </div>
+      <div class="grid-2" style="max-width:680px; margin: 1.25rem auto 0;">
+        <div class="card card-principle">
+          <div class="card-icon">&#127760;</div>
+          <h4>4. 개방형 표준 적용</h4>
+          <p>오픈소스/표준 기술 우선, 벤더 종속 최소화</p>
+        </div>
+        <div class="card card-principle">
+          <div class="card-icon">&#9989;</div>
+          <h4>5. 적합성 검증</h4>
+          <p>모듈별 테스트/검증 체계, 인터페이스 준수 확인</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 6: PROCESS MODULE ===== -->
+  <section class="slide" data-title="업무 도메인 분류">
+    <div class="slide-inner">
+      <div class="slide-section">III. 프로세스 모듈화</div>
+      <h2>업무 도메인 모듈 분류 체계</h2>
+      <p class="subtitle" style="margin-bottom:1.5rem;">팀 업무를 6개 독립 모듈로 분류합니다. 각 모듈은 주담당 + 부담당 체계로 운영됩니다.</p>
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>모듈 ID</th>
+            <th>도메인</th>
+            <th>주요 업무</th>
+            <th>기술 스택</th>
+            <th>담당 구조</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="badge badge-primary">WM-01</span></td>
+            <td><strong>블록체인 인터랙션</strong></td>
+            <td>체인별 RPC/SDK 연동, TX 처리, 이벤트 리스닝</td>
+            <td>Web3, ethers.js 등</td>
+            <td>주 1 + 부 1</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-primary">WM-02</span></td>
+            <td><strong>스마트컨트랙트</strong></td>
+            <td>컨트랙트 설계/개발/배포/관리</td>
+            <td>Solidity, Rust, Move</td>
+            <td>주 1 + 부 1</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-primary">WM-03</span></td>
+            <td><strong>백엔드 서버</strong></td>
+            <td>API 서버, DB, 가격정보/알람/광고</td>
+            <td>Node.js, PostgreSQL</td>
+            <td>주 1 + 부 1</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-primary">WM-04</span></td>
+            <td><strong>모바일 앱</strong></td>
+            <td>크로스플랫폼 앱 (Flutter + 네이티브)</td>
+            <td>Flutter/Dart, Swift, Kotlin</td>
+            <td>주 2 + 부 1</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-secondary">WM-05</span></td>
+            <td><strong>인프라/DevOps</strong></td>
+            <td>서버, CI/CD, 블록체인 노드 관리</td>
+            <td>Docker, SSH, Linux</td>
+            <td>주 1 + 부 1</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-secondary">WM-06</span></td>
+            <td><strong>보안/암호화</strong></td>
+            <td>키 관리, 서명, 암호화 로직, Audit</td>
+            <td>암호학, HSM</td>
+            <td>주 1 + 부 1</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="highlight-box" style="margin-top:1rem;">
+        <p><strong>핵심 규칙:</strong> 어떤 모듈도 1명만 수행 가능한 상태(SPOF)가 되지 않는다. 분기별 역할 로테이션으로 지식을 확산시킨다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 7: REQUIREMENT ANALYSIS PROCESS ===== -->
+  <section class="slide" data-title="요구사항 분석 프로세스">
+    <div class="slide-inner">
+      <div class="slide-section">V. 업무 분석 프로세스</div>
+      <h2>요구사항 분석 7단계 표준 프로세스</h2>
+      <p class="subtitle" style="margin-bottom:1.5rem;">모든 프로젝트/기능은 이 프로세스를 거쳐 착수됩니다.</p>
+      <div class="process-steps">
+        <div class="process-step">
+          <div class="step-num">1</div>
+          <h4>요청 이해</h4>
+          <p>What & Why<br>이해관계자 식별<br>성공 기준 정의</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">2</div>
+          <h4>범위 정의</h4>
+          <p>In/Out Scope<br>영향 모듈 식별<br>대상 블록체인</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">3</div>
+          <h4>요구사항 상세</h4>
+          <p>기능/비기능<br>데이터 요구사항<br>인터페이스 정의</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">4</div>
+          <h4>기술 분석</h4>
+          <p>재사용 모듈 파악<br>신규 개발 항목<br>위험 요소 분석</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">5</div>
+          <h4>모듈화 검증</h4>
+          <p>MOSA 원칙 체크<br>응집도/결합도<br>인터페이스 준수</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">6</div>
+          <h4>작업 분해</h4>
+          <p>태스크 분해<br>담당자 배정<br>마일스톤 설정</p>
+        </div>
+        <div class="process-step">
+          <div class="step-num">7</div>
+          <h4>리뷰/승인</h4>
+          <p>체크리스트 검토<br>기술 리드 승인<br>착수 결정</p>
+        </div>
+      </div>
+      <div class="grid-3" style="margin-top:1.5rem;">
+        <div class="card" style="border-top:2px solid var(--accent);">
+          <h4 style="font-size:1.05rem;">5단계: 모듈화 체크리스트</h4>
+          <ul class="list-check list-good" style="margin-top:0.5rem;">
+            <li>독립적으로 개발/테스트/배포 가능한가?</li>
+            <li>하나의 모듈이 하나의 책임만 수행하는가?</li>
+            <li>모듈 간 의존이 인터페이스를 통해서만?</li>
+            <li>다른 프로젝트에서도 재사용 가능한가?</li>
+            <li>특정 블록체인/기술에 종속되지 않는가?</li>
+          </ul>
+        </div>
+        <div class="card" style="border-top:2px solid var(--accent3);">
+          <h4 style="font-size:1.05rem;">규모별 적용 수준</h4>
+          <table style="width:100%; font-size:0.95rem; margin-top:0.5rem; color:var(--text-dim);">
+            <tr><td><span class="badge badge-primary">S</span> 1~2일</td><td>1~3단계</td></tr>
+            <tr><td><span class="badge badge-primary">M</span> 1~2주</td><td>1~5단계</td></tr>
+            <tr><td><span class="badge badge-secondary">L</span> 1개월+</td><td>전체 7단계</td></tr>
+            <tr><td><span class="badge badge-secondary">XL</span> 분기+</td><td>전체 + 별도 설계 리뷰</td></tr>
+          </table>
+        </div>
+        <div class="card" style="border-top:2px solid var(--warning);">
+          <h4 style="font-size:1.05rem;">산출물</h4>
+          <ul class="list-check list-good" style="margin-top:0.5rem;">
+            <li>요구사항 분석서 (템플릿 기반)</li>
+            <li>영향받는 모듈 목록</li>
+            <li>인터페이스 변경 사항</li>
+            <li>태스크 분해 및 일정</li>
+            <li>리뷰 승인 기록</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 8: ARCHITECTURE ===== -->
+  <section class="slide" data-title="계층형 아키텍처">
+    <div class="slide-inner">
+      <div class="slide-section">IV. 아키텍처 모듈화</div>
+      <h2>계층형 아키텍처 설계</h2>
+      <p class="subtitle" style="margin-bottom:1.5rem;">소프트웨어를 5개 계층으로 분리하여 모듈의 재활용성과 이식성을 극대화합니다.</p>
+      <div style="max-width:900px;">
+        <div class="arch-layer arch-l1">
+          <span class="arch-label">Application Layer</span>
+          <span class="arch-desc">각 프로젝트별 비즈니스 로직, UI &mdash; 프로젝트마다 고유한 부분</span>
+        </div>
+        <div class="arch-layer arch-l2">
+          <span class="arch-label">Service Layer</span>
+          <span class="arch-desc">도메인 서비스 (가격조회, 알람, 광고, 인증) &mdash; 재사용 가능한 서비스</span>
+        </div>
+        <div class="arch-layer arch-l3">
+          <span class="arch-label">Core Module Layer</span>
+          <span class="arch-desc">공통 핵심 모듈 (지갑, 트랜잭션, 서명, 암호화) &mdash; 전 프로젝트 공유</span>
+        </div>
+        <div class="arch-layer arch-l4">
+          <span class="arch-label">Blockchain Adapter Layer</span>
+          <span class="arch-desc">체인별 어댑터 (Ethereum, Solana, Klaytn...) &mdash; Key Interface로 추상화</span>
+        </div>
+        <div class="arch-layer arch-l5">
+          <span class="arch-label">Infrastructure Layer</span>
+          <span class="arch-desc">DB, 캐시, 메시지큐, 외부 API &mdash; 인프라 기반</span>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top:1.5rem;">
+        <p><strong>설계 원칙:</strong> 상위 계층은 하위 계층에만 의존하며, 같은 계층 내 모듈은 인터페이스를 통해서만 통신합니다. 하위 계층일수록 변경 빈도가 낮고 안정성이 높습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 9: KEY INTERFACE ===== -->
+  <section class="slide" data-title="Key Interface">
+    <div class="slide-inner">
+      <div class="slide-section">IV. 아키텍처 모듈화</div>
+      <h2>Key Interface: 블록체인 어댑터 패턴</h2>
+      <div class="grid-2">
+        <div>
+          <p class="subtitle" style="margin-bottom:1.25rem;">여러 블록체인과의 상호작용을 하나의 표준 인터페이스로 추상화합니다.</p>
+          <div class="code-block">
+<span class="code-keyword">interface</span> <span class="code-type">IBlockchainAdapter</span> {<br>
+&nbsp;&nbsp;<span class="code-method">connect</span>(<span class="code-param">config</span>): <span class="code-type">Connection</span><br>
+&nbsp;&nbsp;<span class="code-method">getBalance</span>(<span class="code-param">address</span>): <span class="code-type">Balance</span><br>
+&nbsp;&nbsp;<span class="code-method">sendTransaction</span>(<span class="code-param">txData</span>): <span class="code-type">TxResult</span><br>
+&nbsp;&nbsp;<span class="code-method">deployContract</span>(<span class="code-param">bytecode, abi</span>): <span class="code-type">Address</span><br>
+&nbsp;&nbsp;<span class="code-method">callContract</span>(<span class="code-param">addr, method, params</span>): <span class="code-type">Result</span><br>
+&nbsp;&nbsp;<span class="code-method">listenEvents</span>(<span class="code-param">addr, event</span>): <span class="code-type">EventStream</span><br>
+&nbsp;&nbsp;<span class="code-method">getTxStatus</span>(<span class="code-param">txHash</span>): <span class="code-type">Status</span><br>
+}
+          </div>
+        </div>
+        <div>
+          <h3>어댑터 구현 체인</h3>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;">
+            <div class="card" style="padding:0.75rem 1rem;border-left:3px solid #3b82f6;">
+              <strong>EthereumAdapter</strong>
+              <span style="float:right;font-size:0.95rem;color:var(--text-dim)">ethers.js / web3.js</span>
+            </div>
+            <div class="card" style="padding:0.75rem 1rem;border-left:3px solid #8b5cf6;">
+              <strong>SolanaAdapter</strong>
+              <span style="float:right;font-size:0.95rem;color:var(--text-dim)">@solana/web3.js</span>
+            </div>
+            <div class="card" style="padding:0.75rem 1rem;border-left:3px solid #f59e0b;">
+              <strong>KlaytnAdapter</strong>
+              <span style="float:right;font-size:0.95rem;color:var(--text-dim)">caver-js</span>
+            </div>
+            <div class="card" style="padding:0.75rem 1rem;border-left:3px solid #10b981;">
+              <strong>PolygonAdapter</strong>
+              <span style="float:right;font-size:0.95rem;color:var(--text-dim)">ethers.js (EVM)</span>
+            </div>
+            <div class="card" style="padding:0.75rem 1rem;border-left:3px solid var(--text-dim);border-style:dashed;">
+              <strong style="color:var(--text-dim)">NewChainAdapter</strong>
+              <span style="float:right;font-size:0.95rem;color:var(--text-dim)">신규 체인 추가 시</span>
+            </div>
+          </div>
+          <div class="highlight-box" style="margin-top:0.75rem;">
+            <p>신규 블록체인 추가 시 <strong>어댑터만 구현</strong>하면 상위 로직 수정 불필요</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 10: CORE MODULES ===== -->
+  <section class="slide" data-title="공통 모듈">
+    <div class="slide-inner">
+      <div class="slide-section">IV. 아키텍처 모듈화</div>
+      <h2>재사용 공통 모듈 & 백엔드 서비스 분리</h2>
+      <div class="grid-2">
+        <div>
+          <h3>공통 Core 모듈</h3>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;">
+            <div class="card card-solution" style="padding:0.85rem 1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>@core/crypto</strong>
+                <span class="badge badge-primary">전 프로젝트</span>
+              </div>
+              <p style="margin-top:0.3rem;">암호화/복호화, 키 관리, 서명</p>
+            </div>
+            <div class="card card-solution" style="padding:0.85rem 1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>@core/wallet</strong>
+                <span class="badge badge-primary">전 프로젝트</span>
+              </div>
+              <p style="margin-top:0.3rem;">지갑 생성/관리, 니모닉</p>
+            </div>
+            <div class="card card-solution" style="padding:0.85rem 1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>@core/chain-adapter</strong>
+                <span class="badge badge-primary">BE / FE</span>
+              </div>
+              <p style="margin-top:0.3rem;">블록체인 어댑터 인터페이스</p>
+            </div>
+            <div class="card card-solution" style="padding:0.85rem 1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>@core/types</strong>
+                <span class="badge badge-primary">전 프로젝트</span>
+              </div>
+              <p style="margin-top:0.3rem;">공통 타입/인터페이스 정의</p>
+            </div>
+            <div class="card card-solution" style="padding:0.85rem 1rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>@core/utils</strong>
+                <span class="badge badge-primary">전 프로젝트</span>
+              </div>
+              <p style="margin-top:0.3rem;">주소 변환, 단위 변환, 공통 유틸</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <h3>백엔드 서비스 분리</h3>
+          <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.5rem;">
+            <div class="card" style="padding:0.85rem 1rem;border-left:3px solid #f59e0b;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>price-service</strong>
+                <span style="font-size:0.9rem;color:var(--text-dim)">REST / WebSocket</span>
+              </div>
+              <p style="margin-top:0.3rem;">암호화폐 가격 정보 수집/제공</p>
+            </div>
+            <div class="card" style="padding:0.85rem 1rem;border-left:3px solid #06b6d4;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>notification-service</strong>
+                <span style="font-size:0.9rem;color:var(--text-dim)">REST / Event Queue</span>
+              </div>
+              <p style="margin-top:0.3rem;">알람/푸시 발송</p>
+            </div>
+            <div class="card" style="padding:0.85rem 1rem;border-left:3px solid #8b5cf6;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>ad-service</strong>
+                <span style="font-size:0.9rem;color:var(--text-dim)">REST API</span>
+              </div>
+              <p style="margin-top:0.3rem;">광고 관리 및 노출</p>
+            </div>
+            <div class="card" style="padding:0.85rem 1rem;border-left:3px solid #10b981;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>auth-service</strong>
+                <span style="font-size:0.9rem;color:var(--text-dim)">REST / JWT</span>
+              </div>
+              <p style="margin-top:0.3rem;">인증/인가</p>
+            </div>
+            <div class="card" style="padding:0.85rem 1rem;border-left:3px solid #3b82f6;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>blockchain-gateway</strong>
+                <span style="font-size:0.9rem;color:var(--text-dim)">REST / gRPC</span>
+              </div>
+              <p style="margin-top:0.3rem;">블록체인 어댑터 래핑 서비스</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 11: ROADMAP ===== -->
+  <section class="slide" data-title="로드맵">
+    <div class="slide-inner">
+      <div class="slide-section">VI. 로드맵</div>
+      <h2>단계별 도입 로드맵</h2>
+      <div class="roadmap">
+        <div class="phase phase-1">
+          <div class="phase-num">Phase 1 &middot; 1~2개월</div>
+          <h4>기반 구축</h4>
+          <ul>
+            <li>모듈 분류 체계 확정</li>
+            <li>역할 매트릭스(주/부) 작성</li>
+            <li>Git 저장소 전략 결정</li>
+            <li>코딩 컨벤션 통일</li>
+            <li>@core/types 정의</li>
+          </ul>
+        </div>
+        <div class="phase phase-2">
+          <div class="phase-num">Phase 2 &middot; 2~3개월</div>
+          <h4>핵심 모듈 추출</h4>
+          <ul>
+            <li>블록체인 어댑터 구현</li>
+            <li>@core/crypto, wallet 추출</li>
+            <li>백엔드 서비스 분리 시작</li>
+            <li>CI/CD 파이프라인 구축</li>
+            <li>API 문서 자동화</li>
+          </ul>
+        </div>
+        <div class="phase phase-3">
+          <div class="phase-num">Phase 3 &middot; 3~4개월</div>
+          <h4>프로세스 정착</h4>
+          <ul>
+            <li>역할 로테이션 1차 시행</li>
+            <li>기술 문서/위키 체계 완성</li>
+            <li>모듈별 테스트 자동화</li>
+            <li>요구사항 분석 프로세스 적용</li>
+            <li>신규 프로젝트에 아키텍처 적용</li>
+          </ul>
+        </div>
+        <div class="phase phase-4">
+          <div class="phase-num">Phase 4 &middot; 지속</div>
+          <h4>고도화</h4>
+          <ul>
+            <li>모듈 성숙도 평가 도입</li>
+            <li>모듈 레지스트리 운영</li>
+            <li>외부 모듈 공유 체계</li>
+            <li>컨트랙트 템플릿 확장</li>
+            <li>자동화 수준 고도화</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 12: SUMMARY ===== -->
+  <section class="slide slide-cover" data-title="요약" style="background: radial-gradient(ellipse at 50% 50%, rgba(139,92,246,0.08) 0%, transparent 70%);">
+    <div class="slide-inner" style="max-width:900px; text-align:center;">
+      <div class="slide-section">Summary</div>
+      <h1 style="font-size:2.4rem;">핵심 요약</h1>
+      <div class="grid-3" style="margin-top:2rem; text-align:left;">
+        <div class="card" style="border-top:3px solid #3b82f6;">
+          <h4 style="color:#3b82f6;">프로세스 모듈화</h4>
+          <ul class="list-check list-good" style="margin-top:0.5rem;">
+            <li>6개 업무 도메인 분류</li>
+            <li>주/부 담당 체계</li>
+            <li>분기별 로테이션</li>
+            <li>7단계 분석 프로세스</li>
+          </ul>
+        </div>
+        <div class="card" style="border-top:3px solid #8b5cf6;">
+          <h4 style="color:#8b5cf6;">아키텍처 모듈화</h4>
+          <ul class="list-check list-good" style="margin-top:0.5rem;">
+            <li>5계층 아키텍처</li>
+            <li>블록체인 어댑터 패턴</li>
+            <li>5개 공통 Core 모듈</li>
+            <li>5개 백엔드 서비스 분리</li>
+          </ul>
+        </div>
+        <div class="card" style="border-top:3px solid #10b981;">
+          <h4 style="color:#10b981;">기대 효과</h4>
+          <ul class="list-check list-good" style="margin-top:0.5rem;">
+            <li>SPOF 제거</li>
+            <li>코드 재사용률 향상</li>
+            <li>신규 체인 추가 비용 감소</li>
+            <li>온보딩 기간 단축</li>
+          </ul>
+        </div>
+      </div>
+      <div class="highlight-box" style="margin-top:2rem; text-align:center;">
+        <p style="font-size:1.05rem;"><strong>모듈화는 단순히 코드를 나누는 것이 아니라,<br>팀의 일하는 방식 자체를 표준화하는 것입니다.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== SLIDE 13: DISCUSSION ===== -->
+  <section class="slide" data-title="논의 사항" style="background: radial-gradient(ellipse at 30% 60%, rgba(245,158,11,0.06) 0%, transparent 60%);">
+    <div class="slide-inner">
+      <div class="slide-section" style="background:rgba(245,158,11,0.1);border-color:rgba(245,158,11,0.3);color:#f59e0b;">Discussion</div>
+      <h2>의사결정이 필요한 논의 사항</h2>
+      <p class="subtitle" style="margin-bottom:2rem;">모듈러 프레임워크의 방향과 깊이를 확정하기 위해, 아래 사항에 대한 경영진의 판단이 필요합니다.</p>
+
+      <!-- Question 1 -->
+      <div class="card" style="border-left:4px solid #f59e0b; margin-bottom:1.25rem; padding:1.75rem;">
+        <h4 style="color:#f59e0b; font-size:1.3rem; margin-bottom:0.75rem;">Q1. 모듈화의 대상 범위</h4>
+        <p style="font-size:1.15rem; margin-bottom:1rem;">모듈화가 적용되어야 하는 대상은 어디까지인가?</p>
+        <div class="grid-2" style="gap:1rem;">
+          <div style="background:var(--surface2); border-radius:8px; padding:1.25rem;">
+            <strong style="color:var(--accent); font-size:1.1rem;">A. 업무 프로세스의 모듈화</strong>
+            <p style="margin-top:0.4rem; font-size:1.05rem;">팀원의 업무 할당/진행 방식을 모듈 단위로 표준화</p>
+          </div>
+          <div style="background:var(--surface2); border-radius:8px; padding:1.25rem;">
+            <strong style="color:var(--accent3); font-size:1.1rem;">B. 소프트웨어(결과물)의 모듈화</strong>
+            <p style="margin-top:0.4rem; font-size:1.05rem;">개발 결과물인 코드/시스템 구조 자체를 모듈화</p>
+          </div>
+        </div>
+        <div class="highlight-box" style="margin-top:1rem;">
+          <p><strong>현재 제안:</strong> 양쪽 모두 적용 (프로세스 모듈화 → 아키텍처 모듈화 순으로 단계적 도입)</p>
+        </div>
+      </div>
+
+      <!-- Question 2 -->
+      <div class="card" style="border-left:4px solid #f59e0b; margin-bottom:1.25rem; padding:1.75rem;">
+        <h4 style="color:#f59e0b; font-size:1.3rem; margin-bottom:0.75rem;">Q2. 표준화의 깊이 (Depth of Standardization)</h4>
+        <p style="font-size:1.15rem; margin-bottom:1rem;">SW 모듈화 시, 표준화를 어느 수준까지 적용할 것인가?</p>
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+          <div style="background:linear-gradient(90deg, rgba(59,130,246,0.15), rgba(59,130,246,0.03)); border-left:3px solid #3b82f6; border-radius:0 8px 8px 0; padding:1.25rem; display:flex; align-items:center; gap:1rem;">
+            <span style="font-size:1.5rem; font-weight:900; color:#3b82f6; min-width:40px;">A</span>
+            <div>
+              <strong style="font-size:1.1rem;">국제 표준 수준</strong>
+              <p style="font-size:1.0rem; color:var(--text-dim); margin-top:0.25rem;">외부 개발자 협업, Exit(소스코드 매각) 시에도 호환 가능한 국제 표준 기반 설계</p>
+            </div>
+          </div>
+          <div style="background:linear-gradient(90deg, rgba(139,92,246,0.15), rgba(139,92,246,0.03)); border-left:3px solid #8b5cf6; border-radius:0 8px 8px 0; padding:1.25rem; display:flex; align-items:center; gap:1rem;">
+            <span style="font-size:1.5rem; font-weight:900; color:#8b5cf6; min-width:40px;">B</span>
+            <div>
+              <strong style="font-size:1.1rem;">사내 표준 수준 (NS Lab 내부)</strong>
+              <p style="font-size:1.0rem; color:var(--text-dim); margin-top:0.25rem;">사내 타 프로젝트 간 연동 용이 (예: PureWallet ↔ PureCertificate ↔ PurePet)</p>
+            </div>
+          </div>
+          <div style="background:linear-gradient(90deg, rgba(6,182,212,0.15), rgba(6,182,212,0.03)); border-left:3px solid #06b6d4; border-radius:0 8px 8px 0; padding:1.25rem; display:flex; align-items:center; gap:1rem;">
+            <span style="font-size:1.5rem; font-weight:900; color:#06b6d4; min-width:40px;">C</span>
+            <div>
+              <strong style="font-size:1.1rem;">프로젝트 단위 표준 (PureWallet 중심)</strong>
+              <p style="font-size:1.0rem; color:var(--text-dim); margin-top:0.25rem;">현재 집중 개발 중인 PureWallet 프로젝트 내부 모듈화 표준</p>
+            </div>
+          </div>
+        </div>
+        <div class="highlight-box" style="margin-top:1rem;">
+          <p><strong>표준화 범위 포함 관계:</strong>&ensp; <span style="color:#3b82f6; font-weight:700; font-size:1.2rem;">A</span> <span style="font-size:1.2rem;">&supset;</span> <span style="color:#8b5cf6; font-weight:700; font-size:1.2rem;">B</span> <span style="font-size:1.2rem;">&supset;</span> <span style="color:#06b6d4; font-weight:700; font-size:1.2rem;">C</span>&ensp; &mdash; A가 가장 넓은 범위이며, B는 A에 포함, C는 B에 포함됩니다. 범위가 넓을수록 초기 투자 비용이 크지만 장기적 확장성이 높습니다.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<div class="key-hint">
+  <kbd>&uarr;</kbd> <kbd>&darr;</kbd> 또는 스크롤로 이동 &middot; <kbd>F</kbd> 전체화면
+</div>
+
+<script>
+(function() {
+  const container = document.getElementById('slidesContainer');
+  const slides = document.querySelectorAll('.slide');
+  const navDots = document.getElementById('navDots');
+  const navCounter = document.getElementById('navCounter');
+  let currentSlide = 0;
+
+  // Create nav dots
+  slides.forEach((s, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'nav-dot' + (i === 0 ? ' active' : '');
+    dot.title = s.dataset.title || ('Slide ' + (i + 1));
+    dot.addEventListener('click', () => {
+      slides[i].scrollIntoView({ behavior: 'smooth' });
+    });
+    navDots.appendChild(dot);
+  });
+
+  function updateNav(index) {
+    if (index === currentSlide) return;
+    currentSlide = index;
+    navCounter.textContent = (index + 1) + ' / ' + slides.length;
+    document.querySelectorAll('.nav-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+    });
+  }
+
+  // Intersection observer for slide tracking
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+        const index = Array.from(slides).indexOf(entry.target);
+        updateNav(index);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  slides.forEach(s => observer.observe(s));
+
+  // Keyboard navigation
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' ') {
+      e.preventDefault();
+      const next = Math.min(currentSlide + 1, slides.length - 1);
+      slides[next].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+      e.preventDefault();
+      const prev = Math.max(currentSlide - 1, 0);
+      slides[prev].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+      } else {
+        document.exitFullscreen();
+      }
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      slides[0].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      slides[slides.length - 1].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+})();
+</script>
+</body>
+</html>

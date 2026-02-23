@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모듈러 업무 체계 - NS Lab</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #334155;
+    --text: #f1f5f9;
+    --text-dim: #94a3b8;
+    --border: #475569;
+    --accent: #3b82f6;
+    --accent2: #06b6d4;
+    --accent3: #8b5cf6;
+    --success: #10b981;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* Header */
+  .header {
+    width: 100%;
+    padding: 3rem 2rem 2rem;
+    text-align: center;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(59,130,246,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 50%, rgba(139,92,246,0.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .header h1 {
+    font-size: 2.8rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+  }
+
+  .header .subtitle {
+    font-size: 1.2rem;
+    color: var(--text-dim);
+    font-weight: 300;
+    position: relative;
+  }
+
+  .header .org-badge {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.4rem 1.2rem;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+    position: relative;
+  }
+
+  /* Main content */
+  .main {
+    width: 100%;
+    max-width: 1100px;
+    padding: 3rem 2rem;
+    flex: 1;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 1.5rem;
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--accent2);
+  }
+
+  /* Card grid */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    border-radius: 16px 16px 0 0;
+    transition: height 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent);
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15);
+  }
+
+  .card:hover::before {
+    height: 4px;
+  }
+
+  .card.presentation::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .card.executive::before { background: linear-gradient(90deg, var(--accent3), var(--accent)); }
+  .card.document::before { background: linear-gradient(90deg, var(--success), var(--accent2)); }
+
+  .card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .card.presentation .card-icon { background: rgba(59,130,246,0.15); color: var(--accent); }
+  .card.executive .card-icon { background: rgba(139,92,246,0.15); color: var(--accent3); }
+  .card.document .card-icon { background: rgba(16,185,129,0.15); color: var(--success); }
+
+  .card h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 0.6rem;
+  }
+
+  .card .card-desc {
+    font-size: 1rem;
+    color: var(--text-dim);
+    line-height: 1.7;
+    flex: 1;
+  }
+
+  .card .card-meta {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1.2rem;
+    flex-wrap: wrap;
+  }
+
+  .card .tag {
+    padding: 0.3rem 0.8rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    background: var(--surface2);
+    color: var(--text-dim);
+  }
+
+  .card.presentation .tag.type { background: rgba(59,130,246,0.12); color: var(--accent); }
+  .card.executive .tag.type { background: rgba(139,92,246,0.12); color: var(--accent3); }
+  .card.document .tag.type { background: rgba(16,185,129,0.12); color: var(--success); }
+
+  .card .arrow {
+    position: absolute;
+    bottom: 2rem;
+    right: 2rem;
+    font-size: 1.4rem;
+    color: var(--text-dim);
+    transition: all 0.3s ease;
+  }
+
+  .card:hover .arrow {
+    color: var(--accent);
+    transform: translateX(4px);
+  }
+
+  /* Document section */
+  .doc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .doc-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.2s ease;
+  }
+
+  .doc-item:hover {
+    border-color: var(--success);
+    background: rgba(16,185,129,0.03);
+  }
+
+  .doc-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: rgba(16,185,129,0.12);
+    color: var(--success);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .doc-info { flex: 1; }
+
+  .doc-info h4 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+
+  .doc-info p {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  .doc-badge {
+    padding: 0.25rem 0.7rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background: var(--surface2);
+    color: var(--text-dim);
+  }
+
+  /* Overview section */
+  .overview {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  .overview h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 1.2rem;
+    color: var(--text);
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .overview-item {
+    padding: 1rem;
+    border-radius: 10px;
+    background: var(--surface2);
+    text-align: center;
+  }
+
+  .overview-item .label {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+  }
+
+  .overview-item .value {
+    font-size: 1.3rem;
+    font-weight: 700;
+  }
+
+  .overview-item .value.blue { color: var(--accent); }
+  .overview-item .value.cyan { color: var(--accent2); }
+  .overview-item .value.purple { color: var(--accent3); }
+  .overview-item .value.green { color: var(--success); }
+
+  /* Footer */
+  .footer {
+    width: 100%;
+    padding: 1.5rem 2rem;
+    text-align: center;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.85rem;
+  }
+
+  .footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .footer a:hover { text-decoration: underline; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .header h1 { font-size: 2rem; }
+    .header .subtitle { font-size: 1rem; }
+    .card-grid { grid-template-columns: 1fr; }
+    .main { padding: 2rem 1rem; }
+    .overview-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>모듈러 업무 체계</h1>
+  <p class="subtitle">Modular Open Systems Approach for Software Development</p>
+  <span class="org-badge">NS Lab &middot; Modular Work Framework</span>
+</div>
+
+<div class="main">
+
+  <!-- Project Overview -->
+  <div class="overview">
+    <h3>프로젝트 개요</h3>
+    <div class="overview-grid">
+      <div class="overview-item">
+        <div class="label">적용 방법론</div>
+        <div class="value blue">MOSA</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">팀 규모</div>
+        <div class="value cyan">7~8명</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">적용 범위</div>
+        <div class="value purple">프로세스 + 아키텍처</div>
+      </div>
+      <div class="overview-item">
+        <div class="label">표준화 수준</div>
+        <div class="value green">A &supset; B &supset; C</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Presentation Cards -->
+  <div class="section-title">프레젠테이션</div>
+  <div class="card-grid">
+
+    <a href="modular-work-presentation.html" class="card presentation">
+      <div class="card-icon">&#9776;</div>
+      <h3>팀 발표자료</h3>
+      <p class="card-desc">
+        개발팀 내부 공유용 발표자료입니다. 모듈러 업무 체계의 기술적 상세 내용,
+        아키텍처 설계, MOSA 5대 원칙, 업무 도메인 모듈, 7단계 요구사항 프로세스,
+        로드맵 등을 포함합니다.
+      </p>
+      <div class="card-meta">
+        <span class="tag type">팀 내부용</span>
+        <span class="tag">13 슬라이드</span>
+        <span class="tag">기술 상세</span>
+      </div>
+      <span class="arrow">&rarr;</span>
+    </a>
+
+    <a href="modular-work-executive.html" class="card executive">
+      <div class="card-icon">&#9878;</div>
+      <h3>경영진 검토 보고</h3>
+      <p class="card-desc">
+        경영진 보고용 검토 자료입니다. 모듈러 업무 체계의 필요성, 기대 효과,
+        표준화 수준(A/B/C) 논의 사항 등을 비기술적 관점에서 정리했습니다.
+        현황 분석과 향후 방향 검토에 초점을 맞추었습니다.
+      </p>
+      <div class="card-meta">
+        <span class="tag type">경영진용</span>
+        <span class="tag">10 슬라이드</span>
+        <span class="tag">검토 보고</span>
+      </div>
+      <span class="arrow">&rarr;</span>
+    </a>
+
+  </div>
+
+  <!-- Documents -->
+  <div class="section-title">문서</div>
+  <div class="doc-list">
+
+    <div class="doc-item">
+      <div class="doc-icon">&#128196;</div>
+      <div class="doc-info">
+        <h4>요구사항 분석서</h4>
+        <p>모듈러 업무 체계 도입을 위한 현황 분석(As-Is), 목표 상태(To-Be), MOSA 원칙 매핑, 프로세스/아키텍처 요구사항, 로드맵</p>
+      </div>
+      <span class="doc-badge">requirements-analysis.md</span>
+    </div>
+
+    <div class="doc-item">
+      <div class="doc-icon">&#128203;</div>
+      <div class="doc-info">
+        <h4>요구사항 분석 템플릿</h4>
+        <p>새 프로젝트/기능 요청 시 표준화된 방식으로 요구사항을 분석하기 위한 7단계 틀 (팀 공용 양식)</p>
+      </div>
+      <span class="doc-badge">templates/requirement-analysis-template.md</span>
+    </div>
+
+  </div>
+
+  <!-- Sitemap -->
+  <div class="section-title">사이트맵</div>
+  <div class="overview" style="padding: 1.5rem 2rem;">
+    <table style="width:100%; border-collapse: collapse;">
+      <thead>
+        <tr style="border-bottom: 1px solid var(--border);">
+          <th style="text-align:left; padding: 0.6rem 0; color: var(--text-dim); font-size: 0.85rem; font-weight: 500;">파일</th>
+          <th style="text-align:left; padding: 0.6rem 0; color: var(--text-dim); font-size: 0.85rem; font-weight: 500;">구분</th>
+          <th style="text-align:left; padding: 0.6rem 0; color: var(--text-dim); font-size: 0.85rem; font-weight: 500;">설명</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr style="border-bottom: 1px solid rgba(71,85,105,0.3);">
+          <td style="padding: 0.7rem 0;"><code style="color: var(--accent); background: rgba(59,130,246,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;">index.html</code></td>
+          <td style="padding: 0.7rem 0; color: var(--text-dim);">랜딩 페이지</td>
+          <td style="padding: 0.7rem 0; color: var(--text-dim);">현재 페이지 (사이트맵)</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(71,85,105,0.3);">
+          <td style="padding: 0.7rem 0;"><a href="modular-work-presentation.html" style="color: var(--accent); text-decoration: none;">modular-work-presentation.html</a></td>
+          <td style="padding: 0.7rem 0; color: var(--text-dim);">프레젠테이션</td>
+          <td style="padding: 0.7rem 0; color: var(--text-dim);">팀 내부 발표자료 (다크 테마, 13슬라이드)</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(71,85,105,0.3);">
+          <td style="padding: 0.7rem 0;"><a href="modular-work-executive.html" style="color: var(--accent3); text-decoration: none;">modular-work-executive.html</a></td>
+          <td style="padding: 0.7rem 0; color: var(--text-dim);">프레젠테이션</td>
+          <td style="padding: 0.7rem 0; color: var(--text-dim);">경영진 검토 보고 (라이트 테마, 10슬라이드)</td>
+        </tr>
+        <tr style="border-bottom: 1px solid rgba(71,85,105,0.3);">
+          <td style="padding: 0.7rem 0;"><code style="color: var(--success); background: rgba(16,185,129,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;">requirements-analysis.md</code></td>
+          <td style="padding: 0.7rem 0; color: var(--text-dim);">문서</td>
+          <td style="padding: 0.7rem 0; color: var(--text-dim);">요구사항 분석서 (Markdown)</td>
+        </tr>
+        <tr>
+          <td style="padding: 0.7rem 0;"><code style="color: var(--success); background: rgba(16,185,129,0.1); padding: 0.2rem 0.5rem; border-radius: 4px;">templates/requirement-analysis-template.md</code></td>
+          <td style="padding: 0.7rem 0; color: var(--text-dim);">문서</td>
+          <td style="padding: 0.7rem 0; color: var(--text-dim);">요구사항 분석 템플릿 (Markdown)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>NS Lab &middot; 모듈러 업무 체계 프로젝트 &middot; 2026</p>
+</div>
+
+</body>
+</html>
